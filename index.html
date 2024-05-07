@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Links à Playlist do Spotify</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.24.0/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/spotify-web-api-js/2.4.0/spotify-web-api.min.js"></script>
+</head>
+<body>
+    <h1>Adicionar Links à Playlist do Spotify</h1>
+    <input type="file" id="fileInput" accept=".txt">
+    <button onclick="adicionarTracks()">Adicionar à Playlist</button>
+
+    <script>
+        // Configurações do Spotify
+        const clientId = 'seu_client_id';
+        const redirectUri = 'https://seu-site.com/callback'; // URL de redirecionamento autorizada no Spotify Developer Dashboard
+        const scopes = ['playlist-modify-public', 'playlist-modify-private'];
+        
+        // Crie uma instância do objeto Spotify Web API
+        const spotifyApi = new SpotifyWebApi();
+
+        // Função para autenticar o usuário no Spotify
+        async function autenticarSpotify() {
+            // Redirecionar o usuário para a página de autorização do Spotify
+            window.location.href = `https://accounts.spotify.com/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopes.join('%20')}&response_type=token`;
+        }
+
+        // Função para adicionar as faixas à playlist
+        async function adicionarTracks() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = async function(event) {
+                    const conteudo = event.target.result;
+                    const links = conteudo.split('\n').filter(link => link.startsWith('https://open.spotify.com/'));
+                    
+                    if (links.length === 0) {
+                        console.error('Nenhum link do Spotify encontrado no arquivo.');
+                        return;
+                    }
+
+                    try {
+                        // Autenticar o usuário no Spotify
+                        await autenticarSpotify();
+
+                        // Solicitar ao usuário que autorize o aplicativo e obtenha um token de acesso
+                        // O token de acesso é retornado na URL de redirecionamento definida no Spotify Developer Dashboard
+                    } catch (error) {
+                        console.error('Erro ao autenticar com o Spotify:', error);
+                    }
+                };
+
+                reader.readAsText(file);
+            } else {
+                console.error('Nenhum arquivo selecionado.');
+            }
+        }
+    </script>
+</body>
+</html>
